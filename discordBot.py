@@ -11,7 +11,11 @@ admin_id = ""
 client = discord.Client()
 # Debug Variable
 DEBUG = False
-
+# whitelist or blacklist for roles 
+# False for blacklist, True for whitelist
+whitelist = False
+# Role List Filter
+roleList = []
 
 ################################################################
 ################ COMMAND LIST (IMPLEMENTATIONS) ################
@@ -38,6 +42,8 @@ async def addRole(message):
     roleList = get_roles(message)
     for role in message.server.roles[1:]:
         if str(role).lower() in roleList:
+            if DEBUG:
+                print("User: ", message.author, " has added role: ", role)
             await client.add_roles(message.author, role)
     await client.send_message(message.channel, "done!")
 
@@ -46,6 +52,8 @@ async def removeRole(message):
     roleList = get_roles(message)
     for role in message.server.roles[1:]:
         if str(role).lower() in roleList:
+            if DEBUG:
+                print("User: ", message.author, " has removed role: ", role)
             await client.remove_roles(message.author, role)
     await client.send_message(message.channel, "done!")
 
@@ -89,7 +97,39 @@ def is_me(message):
     return message.author == client.user
 
 def get_roles(message):
-    return list(map(str.lower, message.content.split()[1:]))
+    theList = list(map(str.lower, message.content.split()[1:]))
+    cleanedList = []
+    for role in theList:
+        if (not (whitelist ^ bool(role in roleList))):
+            cleanedList.append(role)
+    return cleanedList
+
+def prompt():
+    config_file = Path("./config.yaml")
+    global token
+    global admin_id
+    global client
+    global whitelist
+    global roleList
+    token = input("What is the bot's Token ID?: ")
+    print("What is the owner's admin_id")
+    admin_id = input("You can retrieve the ID by using '\@<username>': ")
+    print("Do you wish to use a whitelist or blacklist?")
+    userInput = input("Whitelist? (yes/no): ")
+    if userInput == "" or userInput.lower().startswith("y"):
+        whitelist = True
+    else:
+        whitelist = False
+    print("What roles do you want to white/black list?")
+    roleList = input("Please separate roles by spaces: ").lower().split()
+    data = dict(
+        token = token,
+        admin_id = admin_id,
+        whitelist = whitelist,
+        roleList = roleList)
+    with config_file.open('w') as stream:
+        yaml.dump(data, stream, default_flow_style=False)
+    return
     
 ######### DRIVER FUNCTIONS #########
 @client.event
@@ -98,6 +138,10 @@ async def on_ready():
     print('Logged in:')
     print("Client Username: ", client.user.name)
     print("Client ID: ", client.user.id)
+    if(whitelist):
+        print("Whitelist: ", roleList)
+    else:
+        print("Blacklist: ", roleList)
     print("--------------------------------")
 
 @client.event
@@ -110,12 +154,13 @@ async def on_message(message):
         command = message.content.split()[0][1:]
         await func_dict.get(command, invalidCommand)(message)
 
-
 def main():
     config_file = Path("./config.yaml")
     global token
     global admin_id
     global client
+    global whitelist
+    global roleList
     if config_file.is_file():
         # read file
         with config_file.open('r') as stream:
@@ -123,19 +168,14 @@ def main():
                 config = yaml.load(stream)
                 token = config["token"]
                 admin_id = config["admin_id"]
+                whitelist = bool(config["whitelist"])
+                roleList = config["roleList"].lower().split()
             except yaml.YAMLError as exc:
                 print(exec)
-                return
+                prompt()
     else:
         # prompt user
-        token = input("What is the bot's Token ID?")
-        print("What is the owner's admin_id")
-        admin_id = input("You can retrieve the ID by using '\@<username>'")
-        data = dict(
-            token = token,
-            admin_id = admin_id)
-        with config_file.open('w') as stream:
-            yaml.dump(data, stream, default_flow_style=False)
+        prompt()
 
     client.run(token)
 
