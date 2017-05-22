@@ -60,3 +60,4 @@ target/
 
 # Custome files
 config.yaml
+config*
