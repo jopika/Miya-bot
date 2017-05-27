@@ -17,18 +17,25 @@ whitelist = False
 # Role List Filter
 roleList = []
 
+
 ################################################################
 ################ COMMAND LIST (IMPLEMENTATIONS) ################
 ################################################################
 
 ### !help - prints the commands that are useable to the public
 async def help(message):
-    await client.send_message(message.author, "-----------------------\n!help - gives you this message \n !listRoles - gives you the list of roles \n !addRole [roles]    - adds the space separated roles to the user (if allowed) \n !removeRole [roles] - removes the space separated roles to the user (if allowed) \n !purge - cleans bot messages\n-----------------------------------")
+    await client.send_message(message.author, "-----------------------\n!help - gives you this message \n !listRoles "
+                                              "- gives you the list of roles \n !addRole [roles]    - adds the space "
+                                              "separated roles to the user (if allowed) \n !removeRole [roles] - "
+                                              "removes the space separated roles to the user (if allowed) \n !purge - "
+                                              "cleans bot messages\n-----------------------------------")
+
 
 async def invalidCommand(message):
     await client.send_message(message.channel, "Invalid command, use !help for list of commands")
 
-### !listRoles - lists the roles 
+
+# !listRoles - lists the roles
 async def listRoles(message):
     server = message.server
     messageString = ""
@@ -37,7 +44,8 @@ async def listRoles(message):
         messageString += " "
     await client.send_message(message.channel, messageString)
 
-### !addRole [listOfRoles] - adds the role(s) to the user
+
+# !addRole [listOfRoles] - adds the role(s) to the user
 async def addRole(message):
     roleList = get_roles(message)
     for role in message.server.roles[1:]:
@@ -47,7 +55,8 @@ async def addRole(message):
             await client.add_roles(message.author, role)
     await client.send_message(message.channel, "done!")
 
-### !removeRole [listOfRoles] - remove the role(s) to the user
+
+# !removeRole [listOfRoles] - remove the role(s) to the user
 async def removeRole(message):
     roleList = get_roles(message)
     for role in message.server.roles[1:]:
@@ -57,11 +66,13 @@ async def removeRole(message):
             await client.remove_roles(message.author, role)
     await client.send_message(message.channel, "done!")
 
-### !purge - clears the last few messages sent by the bot
+
+# !purge - clears the last few messages sent by the bot
 async def purge(message):
     await client.purge_from(message.channel, limit=100, check=is_me)
 
-### *admin* !purge [x=50] - clears out the last x messages (default is 50)
+
+# *admin* !nuke [x=50] - clears out the last x messages (default is 50)
 async def nuke(message):
     if message.author.id == admin_id:
         commandParams = message.content.split()[1:]
@@ -70,7 +81,8 @@ async def nuke(message):
             count = int(commandParams[0])
         await client.purge_from(message.channel, limit=count)
 
-### *admin* !quit - shutdown the bot gracefully
+
+# *admin* !quit - shutdown the bot gracefully
 async def quit(message):
     if message.author.id == admin_id:
         if DEBUG:
@@ -80,21 +92,24 @@ async def quit(message):
         if DEBUG:
             await client.send_message(message.channel, "Not authorized to use this command!")
 
+
 ################################################################
 ################################################################
 
 func_dict = {
-    'help':help, 
-    'addRole':addRole, 
-    'listRoles': listRoles, 
+    'help': help,
+    'addRole': addRole,
+    'listRoles': listRoles,
     'removeRole': removeRole,
     'purge': purge,
     'nuke': nuke,
-    'quit':quit}
+    'quit': quit}
+
 
 ######### HELPER FUNCTIONS #########
 def is_me(message):
     return message.author == client.user
+
 
 def get_roles(message):
     theList = list(map(str.lower, message.content.split()[1:]))
@@ -103,6 +118,7 @@ def get_roles(message):
         if (not (whitelist ^ bool(role in roleList))):
             cleanedList.append(role)
     return cleanedList
+
 
 def prompt():
     config_file = Path("./config.yaml")
@@ -123,14 +139,15 @@ def prompt():
     print("What roles do you want to white/black list?")
     roleList = input("Please separate roles by spaces: ").lower().split()
     data = dict(
-        token = token,
-        admin_id = admin_id,
-        whitelist = whitelist,
-        roleList = roleList)
+        token=token,
+        admin_id=admin_id,
+        whitelist=whitelist,
+        roleList=roleList)
     with config_file.open('w') as stream:
         yaml.dump(data, stream, default_flow_style=False)
     return
-    
+
+
 ######### DRIVER FUNCTIONS #########
 @client.event
 async def on_ready():
@@ -138,19 +155,21 @@ async def on_ready():
     print('Logged in:')
     print("Client Username: ", client.user.name)
     print("Client ID: ", client.user.id)
-    if(whitelist):
+    if (whitelist):
         print("Whitelist: ", roleList)
     else:
         print("Blacklist: ", roleList)
     print("--------------------------------")
 
+
 @client.event
 async def on_message(message):
     if DEBUG:
         print(message.author, ": ", message.content)
-    if(not message.author.bot and message.content.startswith('!')):
+    if not message.author.bot and message.content.startswith('!'):
         command = message.content.split()[0][1:]
         await func_dict.get(command, invalidCommand)(message)
+
 
 def main():
     config_file = Path("./config.yaml")
@@ -177,6 +196,6 @@ def main():
 
     client.run(token)
 
+
 if __name__ == '__main__':
     main()
-
