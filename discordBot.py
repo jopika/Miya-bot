@@ -59,7 +59,7 @@ async def removeRole(message):
 
 ### !purge - clears the last few messages sent by the bot
 async def purge(message):
-    await client.purge_from(message.channel, limit=10, check=is_me)
+    await client.purge_from(message.channel, limit=100, check=is_me)
 
 ### *admin* !purge [x=50] - clears out the last x messages (default is 50)
 async def nuke(message):
@@ -149,8 +149,6 @@ async def on_message(message):
     if DEBUG:
         print(message.author, ": ", message.content)
     if(not message.author.bot and message.content.startswith('!')):
-        # listOfCommands = message.content.split()
-        # command = listOfCommands[0][1:]
         command = message.content.split()[0][1:]
         await func_dict.get(command, invalidCommand)(message)
 
