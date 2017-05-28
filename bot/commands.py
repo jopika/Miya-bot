@@ -1,10 +1,6 @@
 import discord
 import bot.handler
 
-global client
-global DEBUG
-global admin_id
-
 
 ### !help - prints the commands that are useable to the public
 async def help(message):
@@ -16,6 +12,7 @@ async def help(message):
 
 
 async def invalidCommand(message):
+    """Default function that runs if user attempts to run an invalid command"""
     await client.send_message(message.channel, "Invalid command, use !help for list of commands")
 
 
@@ -31,7 +28,7 @@ async def listRoles(message):
 
 # !addRole [listOfRoles] - adds the role(s) to the user
 async def addRole(message):
-    roleList = get_roles(message)
+    roleList = get_roles_in_message(message)
     for role in message.server.roles[1:]:
         if str(role).lower() in roleList:
             if DEBUG:
@@ -42,7 +39,7 @@ async def addRole(message):
 
 # !removeRole [listOfRoles] - remove the role(s) to the user
 async def removeRole(message):
-    roleList = get_roles(message)
+    roleList = get_roles_in_message(message)
     for role in message.server.roles[1:]:
         if str(role).lower() in roleList:
             if DEBUG:
@@ -58,23 +55,31 @@ async def purge(message):
 
 # *admin* !nuke [x=50] - clears out the last x messages (default is 50)
 async def nuke(message):
-    if message.author.id == admin_id:
-        commandParams = message.content.split()[1:]
+    if authorized(message.author.id):
+        command_params = message.content.split()[1:]
         count = 50
-        if len(commandParams) == 1:
-            count = int(commandParams[0])
+        if len(command_params) == 1:
+            count = int(command_params[0])
         await client.purge_from(message.channel, limit=count)
 
 
 # *admin* !quit - shutdown the bot gracefully
 async def quit(message):
-    if message.author.id == admin_id:
+    if authorized(message.author.id):
         if DEBUG:
             await client.send_message(message.channel, "Shutting down")
         await client.close()
     else:
         if DEBUG:
             await client.send_message(message.channel, "Not authorized to use this command!")
+
+
+# *admin* !allowFunction [function_name] - allows the function to be run by users
+async def allowFunction(message):
+    if authorized(message.author.id):
+        pass
+    else:
+        pass
 
 
 ########## Function Dictionary ##########
@@ -96,24 +101,41 @@ def is_me(message):
 
 
 # TODO: Restructure this
-# TODO: Make this function
-def get_roles(message):
+def get_roles_in_message(message):
+    """Retrieves the list of roles in a message, delimited by spaces"""
     theList = list(map(str.lower, message.content.split()[1:]))
+    return filter_roles(theList)
+
+
+def filter_roles(list_of_roles):
+    """Filters the list_of_roles to keep only the valid server roles (by using the blacklist/whitelist"""
     cleanedList = []
-    for role in theList:
-        if not (whitelist ^ bool(role in roleList)):
+    for role in list_of_roles:
+        if not (whitelist_roles ^ bool(role in roleList)):
             cleanedList.append(role)
     return cleanedList
 
 
+# TODO: Make this to check if the command is blacklisted or not as well
+# TODO: Make an "admin list" and check if that is authorized correctly
+def authorized(user_id):
+    return user_id == owner_id
+
+
+def is_owner(user_id):
+    """Checks if the user is the bot's owner"""
+    return user_id == owner_id
+
 def init():
     global client
     global DEBUG
-    global admin_id
-    global whitelist
+    global owner_id
+    global whitelist_roles
     global roleList
+    global commandList
     client = bot.handler.client
     DEBUG = bot.handler.DEBUG
-    admin_id = bot.handler.admin_id
-    whitelist = bot.handler.whitelist
+    owner_id = bot.handler.owner_id
+    whitelist_roles = bot.handler.whitelist_roles
     roleList = bot.handler.roleList
+    commandList = bot.handler.commandList

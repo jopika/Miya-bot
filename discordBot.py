@@ -1,26 +1,28 @@
-import discord
-import asyncio
-from pathlib import Path
-import yaml
-import bot.handler
+import bot.handler as handler
 import bot.commands as commands
 
 
 ######### DRIVER FUNCTIONS #########
-@bot.handler.client.event
+@handler.client.event
 async def on_ready():
     print("--------------------------------")
     print('Logged in:')
     print("Client Username: ", client.user.name)
     print("Client ID: ", client.user.id)
-    if whitelist:
-        print("Whitelist: ", roleList)
+    print("Owner ID: ", handler.owner_id)
+    print("Admin List: ", handler.adminList)
+    if whitelist_roles:
+        print("Whitelisted Roles: ", roleList)
     else:
-        print("Blacklist: ", roleList)
+        print("Blacklisted Roles: ", roleList)
+    if whitelist_commands:
+        print("Whitelisted Commands: ", commandList)
+    else:
+        print("Blacklisted Commands", commandList)
     print("--------------------------------")
 
 
-@bot.handler.client.event
+@handler.client.event
 async def on_message(message):
     if DEBUG:
         print(message.author, ": ", message.content)
@@ -33,15 +35,21 @@ def main():
     global token
     global client
     global DEBUG
-    global whitelist
+    global whitelist_roles
     global roleList
-    bot.handler.init()
-    bot.commands.init()
-    token = bot.handler.token
-    client = bot.handler.client
-    DEBUG = bot.handler.DEBUG
-    whitelist = bot.handler.whitelist
-    roleList = bot.handler.roleList
+    global whitelist_commands
+    global commandList
+
+    handler.init()
+    commands.init()
+
+    token = handler.token
+    client = handler.client
+    DEBUG = handler.DEBUG
+    whitelist_roles = handler.whitelist_roles
+    roleList = handler.roleList
+    whitelist_commands = handler.whitelist_commands
+    commandList = handler.commandList
 
     client.run(token)
 
