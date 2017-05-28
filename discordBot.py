@@ -2,6 +2,7 @@ import discord
 import asyncio
 from pathlib import Path
 import yaml
+import bot.handler
 
 # Bot token
 token = ""
@@ -115,7 +116,7 @@ def get_roles(message):
     theList = list(map(str.lower, message.content.split()[1:]))
     cleanedList = []
     for role in theList:
-        if (not (whitelist ^ bool(role in roleList))):
+        if not (whitelist ^ bool(role in roleList)):
             cleanedList.append(role)
     return cleanedList
 
@@ -149,7 +150,7 @@ def prompt():
 
 
 ######### DRIVER FUNCTIONS #########
-@client.event
+@bot.handler.client.event
 async def on_ready():
     print("--------------------------------")
     print('Logged in:')
