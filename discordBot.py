@@ -11,14 +11,14 @@ async def on_ready():
     print("Client ID: ", client.user.id)
     print("Owner ID: ", handler.owner_id)
     print("Admin List: ", handler.adminList)
-    if whitelist_roles:
-        print("Whitelisted Roles: ", roleList)
+    if handler.whitelist_roles:
+        print("Whitelisted Roles: ", handler.roleList)
     else:
-        print("Blacklisted Roles: ", roleList)
-    if whitelist_commands:
-        print("Whitelisted Commands: ", commandList)
+        print("Blacklisted Roles: ", handler.roleList)
+    if handler.whitelist_commands:
+        print("Whitelisted Commands: ", handler.commandList)
     else:
-        print("Blacklisted Commands", commandList)
+        print("Blacklisted Commands", handler.commandList)
     print("--------------------------------")
 
 
@@ -35,10 +35,6 @@ def main():
     global token
     global client
     global DEBUG
-    global whitelist_roles
-    global roleList
-    global whitelist_commands
-    global commandList
 
     handler.init()
     commands.init()
@@ -46,10 +42,6 @@ def main():
     token = handler.token
     client = handler.client
     DEBUG = handler.DEBUG
-    whitelist_roles = handler.whitelist_roles
-    roleList = handler.roleList
-    whitelist_commands = handler.whitelist_commands
-    commandList = handler.commandList
 
     client.run(token)
 

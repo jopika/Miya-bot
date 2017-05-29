@@ -6,6 +6,8 @@ import yaml
 token = ""
 # Owner ID used to debug the bot and shutdown remotely
 owner_id = ""
+# List of admins for the bot
+adminList = []
 # Client Object for the bot
 client = discord.Client()
 # Debug Variable
@@ -20,10 +22,21 @@ roleList = []
 whitelist_commands = False
 # Command List
 commandList = []
+# Configuration file location
+config_file = Path("./config.yaml")
+
+
+def update_config():
+    with config_file.open('r') as read_stream:
+        config = yaml.load(read_stream)
+        config['roleList'] = roleList
+        config['commandList'] = commandList
+    with config_file.open('w') as write_stream:
+        yaml.dump(config, write_stream)
+
 
 
 def prompt():
-    config_file = Path("./config.yaml")
     global token
     global owner_id
     global adminList
@@ -69,7 +82,6 @@ def prompt():
 
 
 def init():
-    config_file = Path("./config.yaml")
     global token
     global owner_id
     global adminList
