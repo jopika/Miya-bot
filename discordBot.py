@@ -1,6 +1,9 @@
 import bot.handler as handler
 import bot.commands as commands
 
+# Configuration file location
+config_file = "./config.yaml"
+
 
 ######### DRIVER FUNCTIONS #########
 @handler.client.event
@@ -36,7 +39,7 @@ def main():
     global client
     global DEBUG
 
-    handler.init()
+    handler.init(config_file)
     commands.init()
 
     token = handler.token

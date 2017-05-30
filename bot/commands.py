@@ -15,46 +15,61 @@ async def help(message):
                                               "cleans bot messages\n-----------------------------------")
 
 
+async def unauthorizedCommand(message):
+    await client.send_message(message.channel, "You are not authorized to use this command!")
+
+
 # !listRoles - lists the roles
 async def listRoles(message):
     if authorized(message.author.id, 'listRoles'):
         server = message.server
+        serverRoles = server.roles
+        listOfRoles = []
+        for role in serverRoles:
+            listOfRoles.append(str(role))
+        listOfRoles = filter_roles(listOfRoles)
         messageString = ""
-        for role in server.roles[1:]:
+        for role in filter_roles(listOfRoles):
             messageString += str(role)
             messageString += " "
         await client.send_message(message.channel, messageString)
+    else:
+        unauthorizedCommand(message)
 
 
 # !addRole [listOfRoles] - adds the role(s) to the user
 async def addRole(message):
     if authorized(message.author.id, 'addRole'):
-        roleList = get_roles_in_message(message)
+        role_list = get_roles_in_message(message)
         for role in message.server.roles[1:]:
-            if str(role).lower() in roleList:
+            if str(role).lower() in role_list:
                 if DEBUG:
                     print("User: ", message.author, " has added role: ", role)
                 await client.add_roles(message.author, role)
         await client.send_message(message.channel, "done!")
+    else:
+        unauthorizedCommand(message)
 
 
 # !removeRole [listOfRoles] - remove the role(s) to the user
 async def removeRole(message):
     if authorized(message.author.id, 'removeRole'):
-        roleList = get_roles_in_message(message)
+        role_list = get_roles_in_message(message)
         for role in message.server.roles[1:]:
-            if str(role).lower() in roleList:
+            if str(role).lower() in role_list:
                 if DEBUG:
                     print("User: ", message.author, " has removed role: ", role)
                 await client.remove_roles(message.author, role)
         await client.send_message(message.channel, "done!")
-
+    else:
+        unauthorizedCommand(message)
 
 # !purge - clears the last few messages sent by the bot
 async def purge(message):
     if authorized(message.author.id, 'purge'):
         await client.purge_from(message.channel, limit=100, check=is_me)
-
+    else:
+        unauthorizedCommand(message)
 
 # *admin* !nuke [x=50] - clears out the last x messages (default is 50)
 async def nuke(message):
@@ -64,7 +79,8 @@ async def nuke(message):
         if len(command_params) == 1:
             count = int(command_params[0])
         await client.purge_from(message.channel, limit=count)
-
+    else:
+        unauthorizedCommand(message)
 
 # *owner* !quit - shutdown the bot gracefully
 async def quit(message):
@@ -89,7 +105,8 @@ async def allowCommand(message):
             if command in func_dict.keys() and command in commandList:
                 commandList.remove(command)
                 handler.update_config()
-
+    else:
+        unauthorizedCommand(message)
 
 ########## Function Dictionary ##########
 func_dict = {
@@ -117,10 +134,11 @@ def get_roles_in_message(message):
 
 
 def filter_roles(list_of_roles):
-    """Filters the list_of_roles to keep only the valid server roles (by using the blacklist/whitelist)"""
+    """Filters the list_of_roles to keep only the valid server roles (by using the blacklist/whitelist)
+    Consumes a list of strings and outputs a list a strings"""
     cleanedList = []
     for role in list_of_roles:
-        if not (whitelist_roles ^ bool(role in roleList)):
+        if not (whitelist_roles ^ bool(role.lower() in roleList)):
             cleanedList.append(role)
     return cleanedList
 

@@ -1,7 +1,11 @@
 import discord
-from pathlib import Path
 import yaml
+from pathlib import Path
 
+# Debug Variable
+DEBUG = False
+# Testing Variable
+TESTING = False
 # Bot token
 token = ""
 # Owner ID used to debug the bot and shutdown remotely
@@ -10,8 +14,6 @@ owner_id = ""
 adminList = []
 # Client Object for the bot
 client = discord.Client()
-# Debug Variable
-DEBUG = False
 # whitelist or blacklist for roles
 # False for blacklist, True for whitelist
 whitelist_roles = False
@@ -22,8 +24,8 @@ roleList = []
 whitelist_commands = False
 # Command List
 commandList = []
-# Configuration file location
-config_file = Path("./config.yaml")
+# Configuration File
+config_file = Path()
 
 
 def update_config():
@@ -33,7 +35,6 @@ def update_config():
         config['commandList'] = commandList
     with config_file.open('w') as write_stream:
         yaml.dump(config, write_stream)
-
 
 
 def prompt():
@@ -81,7 +82,9 @@ def prompt():
     return
 
 
-def init():
+def init(config_file_path, debug_toggle='', testing_toggle=False):
+    global DEBUG
+    global TESTING
     global token
     global owner_id
     global adminList
@@ -90,6 +93,11 @@ def init():
     global roleList
     global whitelist_commands
     global commandList
+    global config_file
+    if debug_toggle != '':
+        DEBUG = debug_toggle
+    TESTING = testing_toggle
+    config_file = Path(config_file_path)
     if config_file.is_file():
         # read file
         with config_file.open('r') as stream:
