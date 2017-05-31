@@ -30,8 +30,8 @@ async def on_message(message):
     if DEBUG:
         print(message.author, ": ", message.content)
     if not message.author.bot and message.content.startswith('!'):
-        command = message.content.split()[0][1:]
-        await commands.func_dict.get(command, commands.invalidCommand)(message)
+        command = message.content.split()[0][1:].lower()
+        await commands.func_dict.get(command, commands.invalid_command)(message)
 
 
 def main():

@@ -1,7 +1,8 @@
 import bot.handler as handler
+import bot.permissions as permissions
 
 
-async def invalidCommand(message):
+async def invalid_command(message):
     """Default function that runs if user attempts to run an invalid command"""
     await client.send_message(message.channel, "Invalid command, use !help for list of commands")
 
@@ -15,13 +16,17 @@ async def help(message):
                                               "cleans bot messages\n-----------------------------------")
 
 
-async def unauthorizedCommand(message):
+async def unauthorized_command(message):
     await client.send_message(message.channel, "You are not authorized to use this command!")
 
 
+async def no_permissions_command(message):
+    await client.send_message(message.channel, "Bot does not have permissions! Contact Server Admin")
+
+
 # !listRoles - lists the roles
-async def listRoles(message):
-    if authorized(message.author.id, 'listRoles'):
+async def list_roles(message):
+    if authorized(message.author.id, 'listroles'):
         server = message.server
         serverRoles = server.roles
         listOfRoles = []
@@ -34,12 +39,14 @@ async def listRoles(message):
             messageString += " "
         await client.send_message(message.channel, messageString)
     else:
-        unauthorizedCommand(message)
+        unauthorized_command(message)
 
 
 # !addRole [listOfRoles] - adds the role(s) to the user
-async def addRole(message):
-    if authorized(message.author.id, 'addRole'):
+async def add_role(message):
+    if not has_permissions(message, permissions.MANAGE_ROLES):
+        no_permissions_command(message)
+    if authorized(message.author.id, 'addrole'):
         role_list = get_roles_in_message(message)
         for role in message.server.roles[1:]:
             if str(role).lower() in role_list:
@@ -48,12 +55,14 @@ async def addRole(message):
                 await client.add_roles(message.author, role)
         await client.send_message(message.channel, "done!")
     else:
-        unauthorizedCommand(message)
+        unauthorized_command(message)
 
 
-# !removeRole [listOfRoles] - remove the role(s) to the user
-async def removeRole(message):
-    if authorized(message.author.id, 'removeRole'):
+# !remove_role [listOfRoles] - remove the role(s) to the user
+async def remove_role(message):
+    if not has_permissions(message, permissions.MANAGE_ROLES):
+        no_permissions_command(message)
+    if authorized(message.author.id, 'removerole'):
         role_list = get_roles_in_message(message)
         for role in message.server.roles[1:]:
             if str(role).lower() in role_list:
@@ -62,17 +71,23 @@ async def removeRole(message):
                 await client.remove_roles(message.author, role)
         await client.send_message(message.channel, "done!")
     else:
-        unauthorizedCommand(message)
+        unauthorized_command(message)
+
 
 # !purge - clears the last few messages sent by the bot
 async def purge(message):
+    if not has_permissions(message, permissions.MANAGE_MESSAGES):
+        no_permissions_command(message)
     if authorized(message.author.id, 'purge'):
         await client.purge_from(message.channel, limit=100, check=is_me)
     else:
-        unauthorizedCommand(message)
+        unauthorized_command(message)
+
 
 # *admin* !nuke [x=50] - clears out the last x messages (default is 50)
 async def nuke(message):
+    if not has_permissions(message, permissions.MANAGE_MESSAGES):
+        no_permissions_command(message)
     if authorized(message.author.id, 'nuke'):
         command_params = message.content.split()[1:]
         count = 50
@@ -80,7 +95,8 @@ async def nuke(message):
             count = int(command_params[0])
         await client.purge_from(message.channel, limit=count)
     else:
-        unauthorizedCommand(message)
+        unauthorized_command(message)
+
 
 # *owner* !quit - shutdown the bot gracefully
 async def quit(message):
@@ -93,9 +109,9 @@ async def quit(message):
             await client.send_message(message.channel, "Not authorized to use this command!")
 
 
-# *admin* !allowCommand [function_name] - allows the function to be run by users
-async def allowCommand(message):
-    if authorized(message.author.id, 'allowFunction'):
+# *admin* !allowcommand [function_name] - allows the function to be run by users
+async def allow_command(message):
+    if authorized(message.author.id, 'allowcommand'):
         command = message.content.split()[1]
         if whitelist_commands:
             if command in func_dict.keys() and command not in commandList:
@@ -106,15 +122,16 @@ async def allowCommand(message):
                 commandList.remove(command)
                 handler.update_config()
     else:
-        unauthorizedCommand(message)
+        unauthorized_command(message)
+
 
 ########## Function Dictionary ##########
 func_dict = {
     'help': help,
-    'listRoles': listRoles,
-    'addRole': addRole,
-    'removeRole': removeRole,
-    'allowCommand': allowCommand,
+    'listroles': list_roles,
+    'addrole': add_role,
+    'removerole': remove_role,
+    'allowcommand': allow_command,
     'purge': purge,
     'nuke': nuke,
     'quit': quit}
@@ -124,6 +141,11 @@ func_dict = {
 
 def is_me(message):
     return message.author == client.user
+
+
+def has_permissions(message, action):
+    channel = message.channel
+    return bool(channel.permissions_for(client.user).value & int(action))
 
 
 # TODO: Restructure this
@@ -145,7 +167,7 @@ def filter_roles(list_of_roles):
 
 def authorized(user_id, command_name):
     return user_id == owner_id or (user_id in adminList) or not (
-        whitelist_commands ^ bool(command_name in commandList))
+        whitelist_commands ^ bool(command_name.lower() in commandList))
 
 
 def is_owner(user_id):
