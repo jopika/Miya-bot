@@ -140,10 +140,12 @@ func_dict = {
 ########## HELPER FUNCTIONS ##########
 
 def is_me(message):
+    """Checks if the message was sent by the bot, returns true if yes"""
     return message.author == client.user
 
 
 def has_permissions(message, action):
+    """Checks if the bot has permissions to do a certain action, returns true if yes"""
     channel = message.channel
     return bool(channel.permissions_for(client.user).value & int(action))
 
@@ -156,8 +158,13 @@ def get_roles_in_message(message):
 
 
 def filter_roles(list_of_roles):
-    """Filters the list_of_roles to keep only the valid server roles (by using the blacklist/whitelist)
-    Consumes a list of strings and outputs a list a strings"""
+    """Filters a list of strings to keep only valid server roles
+
+    Consumes a list of strings and keeps only the roles that are
+    valid, in reference to the whitelist/blacklist.
+    :parameter: list_of_roles - list of strings to filter
+    :returns: list of strings
+    """
     cleanedList = []
     for role in list_of_roles:
         if not (whitelist_roles ^ bool(role.lower() in roleList)):
@@ -166,6 +173,7 @@ def filter_roles(list_of_roles):
 
 
 def authorized(user_id, command_name):
+    """Checks if the user is authorized to run the command, returns true if yes"""
     return user_id == owner_id or (user_id in adminList) or not (
         whitelist_commands ^ bool(command_name.lower() in commandList))
 
