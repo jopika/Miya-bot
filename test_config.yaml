@@ -1,0 +1,7 @@
+adminList: []
+commandList: []
+owner_id: '152520342806462464'
+roleList: [fire, water, earth, wind, dark, '!dark', light, '!light']
+token: MzE2MDc5NzMwNDEzNTM1MjMz.DAQDug.0ueHXu81HBMCZdWMT6CXZIvHioc
+whitelist_commands: false
+whitelist_roles: true
