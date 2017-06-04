@@ -14,11 +14,19 @@ async def invalid_command(message):
 
 ### !help - prints the commands that are useable to the public
 async def help(message):
-    await client.send_message(message.author, "-----------------------\n!help - gives you this message \n !listRoles "
-                                              "- gives you the list of roles \n !addRole [roles]    - adds the space "
-                                              "separated roles to the user (if allowed) \n !removeRole [roles] - "
-                                              "removes the space separated roles to the user (if allowed) \n !purge - "
-                                              "cleans bot messages\n-----------------------------------")
+    message_string = '---------------------------------------------------\n'
+    for key in func_help.keys():
+        if is_owner(message.author.id):
+            message_string += "{Owner, "
+        else:
+            message_string += "{"
+        if authorized(message, key):
+            message_string += "Admin"
+            if not (whitelist_commands ^ bool(key.lower() in commandList)):
+                message_string += ", User"
+            message_string += "}:        " + func_help[key] + "\n"
+    message_string += "-----------------------------------------------------------\n"
+    await client.send_message(message.channel, message_string)
 
 
 async def unauthorized_command(message):
@@ -53,8 +61,6 @@ async def list_roles(message):
 
 # !addRole [listOfRoles] - adds the role(s) to the user
 async def add_role(message, user='', roles=[], channel=''):
-    # if (channel == '' and not has_permissions(message, permissions.MANAGE_ROLES)) or\
-    #         not has_permissions('', permissions.MANAGE_ROLES, channel):
     if not has_permissions(message, permissions.MANAGE_ROLES, channel):
         await no_permissions_command(message, channel)
     if authorized(message, 'addrole', user):
@@ -63,8 +69,6 @@ async def add_role(message, user='', roles=[], channel=''):
 
 # !remove_role [listOfRoles] - remove the role(s) to the user
 async def remove_role(message, user='', roles=[], channel=''):
-    # if (channel == '' and not has_permissions(message, permissions.MANAGE_ROLES)) or\
-    #         not has_permissions('', permissions.MANAGE_ROLES, channel):
     if not has_permissions(message, permissions.MANAGE_ROLES, channel):
         await no_permissions_command(message, channel)
     if authorized(message, 'removerole', user):
@@ -149,6 +153,7 @@ async def restrict_command(message):
 
 
 async def modify_command_permissions(message, allow=True):
+    """Helper function to aide with allow_command and restrict_command"""
     command = message.content.split()[1]
     if (whitelist_commands and allow) or not whitelist_commands:
         if command in func_dict.keys() and command not in commandList:
@@ -196,7 +201,20 @@ func_dict = {
     'purge': purge,
     'nuke': nuke,
     # 'test': testing_bank,
-    'quit': quit}
+    'quit': quit
+}
+
+func_help = {
+    'help': "!help - Displays this command",
+    'listroles': "!listroles - Displays the list of roles that may be added or removed",
+    'addrole': "!addrole [roles] - Adds the roles to yourself, roles can be separated by spaces",
+    'removerole': "!removerole [roles] - Removes the roles from yourself, roles can be separated by spaces",
+    'allowcommand': "!allowcommand [command] - Allows the command to be used",
+    'restrictcommand': "!restrictcommand [command] - Restricts the command from being used",
+    'purge': "!purge - Cleans the last few bot messages",
+    'nuke': "!nuke [n=100] - Removes the last [n] messages from the channel"
+    # 'quit': "!quit - Shutdown the bot gracefully"
+}
 ########## Function Dictionary ##########
 
 
