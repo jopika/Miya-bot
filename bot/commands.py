@@ -43,35 +43,43 @@ async def list_roles(message):
 
 
 # !addRole [listOfRoles] - adds the role(s) to the user
-async def add_role(message):
+async def add_role(message, user='', roles=''):
     if not has_permissions(message, permissions.MANAGE_ROLES):
         no_permissions_command(message)
     if authorized(message.author.id, 'addrole'):
-        role_list = get_roles_in_message(message)
-        for role in message.server.roles[1:]:
-            if str(role).lower() in role_list:
-                if DEBUG:
-                    print("User: ", message.author, " has added role: ", role)
-                await client.add_roles(message.author, role)
-        await client.send_message(message.channel, "done!")
-    else:
-        unauthorized_command(message)
+        await role_modify(message, 'add')
 
 
 # !remove_role [listOfRoles] - remove the role(s) to the user
-async def remove_role(message):
+async def remove_role(message, user='', roles=''):
     if not has_permissions(message, permissions.MANAGE_ROLES):
         no_permissions_command(message)
     if authorized(message.author.id, 'removerole'):
-        role_list = get_roles_in_message(message)
-        for role in message.server.roles[1:]:
-            if str(role).lower() in role_list:
-                if DEBUG:
-                    print("User: ", message.author, " has removed role: ", role)
-                await client.remove_roles(message.author, role)
-        await client.send_message(message.channel, "done!")
+        await role_modify(message, 'del')
+
+
+async def role_modify(message, action, user='', roles=[]):
+    user_obj = ''
+    role_string_list = ''
+    if user!='' and roles!='':
+        user_obj = user
+        role_string_list = roles
     else:
-        unauthorized_command(message)
+        user_obj = message.author
+        role_string_list = get_roles_in_message(message)
+    if action.lower() == 'add':
+        role_string_list = diff(role_string_list, list(map(lambda x: str(x).lower(), user_obj.roles)))
+    else:
+        role_string_list = siml(role_string_list, list(map(lambda x: str(x).lower(), user_obj.roles)))
+    role_list = retrieve_roles(message, role_string_list)
+    if action.lower() == 'add':
+        if DEBUG:
+            print("User: ", user_obj, " has added roles: ", role_string_list)
+        await client.add_roles(user_obj, *role_list)
+    else:
+        if DEBUG:
+            print("User: ", user_obj, " has removed roles: ", role_string_list)
+        await client.remove_roles(user_obj, *role_list)
 
 
 # !purge - clears the last few messages sent by the bot
@@ -124,6 +132,13 @@ async def allow_command(message):
     else:
         unauthorized_command(message)
 
+# TODO: Complete this
+async def testing_bank(message):
+    passed_tests = 0
+    failed_tests = 0
+    if is_owner(message.author.id):
+        owner_roles = message.author.roles
+
 
 ########## Function Dictionary ##########
 func_dict = {
@@ -146,8 +161,10 @@ def is_me(message):
 
 def has_permissions(message, action):
     """Checks if the bot has permissions to do a certain action, returns true if yes"""
+    server = message.server
     channel = message.channel
-    return bool(channel.permissions_for(client.user).value & int(action))
+    member_obj = server.get_member(client.user.id)
+    return bool(channel.permissions_for(member_obj).value & int(action))
 
 
 # TODO: Restructure this
@@ -181,6 +198,35 @@ def authorized(user_id, command_name):
 def is_owner(user_id):
     """Checks if the user is the bot's owner"""
     return user_id == owner_id
+
+
+def diff(list_a, list_b):
+    """Takes the difference between list_a and list_b
+
+    :return = list_a - list_b
+    """
+    set_b = set(list_b)
+    return [item for item in list_a if item not in set_b]
+
+def siml(list_a, list_b):
+    """Takes the similarities between list_a and list_b
+
+    :return = list_a & list_b 
+    """
+    set_b = set(list_b)
+    return [item for item in list_a if item in set_b]
+
+
+def retrieve_roles(message, list_of_roles):
+    """Returns a list of role objects that are associated with the list_of_roles
+
+    :return a list of roles
+    """
+    server_roles = message.server.roles
+    return [role for role in server_roles if str(role).lower() in list_of_roles]
+
+
+########## INITIALIZER ##########
 
 
 def init():
