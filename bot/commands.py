@@ -12,8 +12,8 @@ async def invalid_command(message):
     await client.send_message(message.channel, "Invalid command, use !help for list of commands")
 
 
-### !help - prints the commands that are useable to the public
 async def help(message):
+    """Prints the commands that are runnable by the user"""
     message_string = '---------------------------------------------------\n'
     for key in func_help.keys():
         if is_owner(message.author.id):
@@ -41,8 +41,8 @@ async def no_permissions_command(message, channel=''):
     await client.send_message(the_channel, "Bot does not have permissions! Contact Server Admin")
 
 
-# !listRoles - lists the roles
 async def list_roles(message):
+    """Lists the roles the user is allowed to add or remove from self"""
     if authorized(message, 'listroles'):
         server = message.server
         serverRoles = server.roles
@@ -59,16 +59,16 @@ async def list_roles(message):
         await unauthorized_command(message)
 
 
-# !addRole [listOfRoles] - adds the role(s) to the user
 async def add_role(message, user='', roles=[], channel=''):
+    """Adds the role(s) to the given user"""
     if not has_permissions(message, permissions.MANAGE_ROLES, channel):
         await no_permissions_command(message, channel)
     if authorized(message, 'addrole', user):
         await role_modify(message, 'add', user, roles)
 
 
-# !remove_role [listOfRoles] - remove the role(s) to the user
 async def remove_role(message, user='', roles=[], channel=''):
+    """Removes the role(s) from the given user"""
     if not has_permissions(message, permissions.MANAGE_ROLES, channel):
         await no_permissions_command(message, channel)
     if authorized(message, 'removerole', user):
@@ -76,8 +76,6 @@ async def remove_role(message, user='', roles=[], channel=''):
 
 
 async def role_modify(message, action, user='', roles=[]):
-    user_obj = ''
-    role_string_list = ''
     if user != '' and roles != []:
         user_obj = user
         role_string_list = filter_roles(roles)
@@ -88,7 +86,6 @@ async def role_modify(message, action, user='', roles=[]):
         role_string_list = diff(role_string_list, list(map(lambda x: str(x).lower(), user_obj.roles)))
     else:
         role_string_list = siml(role_string_list, list(map(lambda x: str(x).lower(), user_obj.roles)))
-
     role_list = retrieve_roles(user_obj.server, role_string_list)
     if action.lower() == 'add':
         await client.add_roles(user_obj, *role_list)
@@ -102,8 +99,8 @@ async def role_modify(message, action, user='', roles=[]):
                   list(map(lambda x: str(x), user_obj.roles)))
 
 
-# !purge - clears the last few messages sent by the bot
 async def purge(message):
+    """Clears recent bot messages from the channel"""
     if not has_permissions(message, permissions.MANAGE_MESSAGES):
         await no_permissions_command(message)
     if authorized(message, 'purge'):
@@ -112,8 +109,8 @@ async def purge(message):
         await unauthorized_command(message)
 
 
-# *admin* !nuke [x=50] - clears out the last x messages (default is 50)
 async def nuke(message):
+    """Clears out the last x(=50) messages from the channel"""
     if not has_permissions(message, permissions.MANAGE_MESSAGES):
         await no_permissions_command(message)
     if authorized(message, 'nuke'):
@@ -126,8 +123,8 @@ async def nuke(message):
         await unauthorized_command(message)
 
 
-# *owner* !quit - shutdown the bot gracefully
 async def quit(message):
+    """Shuts down the bot gracefully"""
     if is_owner(message.author.id):
         if DEBUG:
             await client.send_message(message.channel, "Shutting down")
@@ -137,8 +134,8 @@ async def quit(message):
             await client.send_message(message.channel, "Not authorized to use this command!")
 
 
-# *admin* !allowcommand [function_name] - allows the function to be run by users
 async def allow_command(message):
+    """Allows the function to be run by users"""
     if authorized(message, 'allowcommand'):
         await modify_command_permissions(message, True)
     else:
@@ -146,6 +143,7 @@ async def allow_command(message):
 
 
 async def restrict_command(message):
+    """Restricts the command to not be run by users"""
     if authorized(message, 'restrictcommand'):
         await modify_command_permissions(message, False)
     else:

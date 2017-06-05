@@ -99,7 +99,7 @@ def init(config_file_path, debug_toggle='', testing_toggle=False):
     TESTING = testing_toggle
     config_file = Path(config_file_path)
     if config_file.is_file():
-        # read file
+        # attempt to read file
         with config_file.open('r') as stream:
             try:
                 config = yaml.load(stream)
@@ -114,5 +114,5 @@ def init(config_file_path, debug_toggle='', testing_toggle=False):
                 print(exc)
                 prompt()
     else:
-        # prompt user
+        # prompt user if file is not found
         prompt()
