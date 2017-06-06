@@ -2,11 +2,6 @@ import bot.handler as handler
 import bot.permissions as permissions
 
 
-# import asyncio
-# import test_bank.testhelper as helper
-# import time
-
-
 async def invalid_command(message):
     """Default function that runs if user attempts to run an invalid command"""
     await client.send_message(message.channel, "Invalid command, use !help for list of commands")
@@ -213,6 +208,8 @@ func_help = {
     'nuke': "!nuke [n=100] - Removes the last [n] messages from the channel"
     # 'quit': "!quit - Shutdown the bot gracefully"
 }
+
+
 ########## Function Dictionary ##########
 
 
@@ -296,130 +293,6 @@ def retrieve_roles(server, list_of_roles):
     """
     server_roles = server.roles
     return [role for role in server_roles if str(role).lower() in list_of_roles]
-
-
-###### TEST BANK ######
-
-
-# async def first_test(future):
-#     await add_role(None, test_getuser(), ["fire"], test_getchannel())
-#     await add_role(None, test_getuser(), ["water"], test_getchannel())
-#     await add_role(None, test_getuser(), ["dark"], test_getchannel())
-#     future.add_done_callback(verify_first_test)
-#
-# def verify_first_test():
-#     helper.add_test_result("Add one role", test_has_roles(["fire"]), "Unable to add role: Fire to user")
-#     helper.add_test_result("Add one role", test_has_roles(["water"]), "Unable to add role: Water to user")
-#     helper.add_test_result("Add one role", test_has_roles(["dark"]), "Unable to add role: Dark to user")
-#
-#
-#
-# async def test_one():
-#     """Tests adding one role """
-#     await add_role(None, test_getuser(), ["fire"], test_getchannel())
-#     test_wait_loop(["fire"])
-#     helper.add_test_result("Add one role", test_has_roles(["fire"]), "Unable to add role: Fire to user")
-#     helper.counter = 1
-#
-#
-# async def test_two():
-#     """Tests adding many roles """
-#     while(helper.counter != 1):
-#         await asyncio.sleep(0.1)
-#     await add_role(None, test_getuser(), ["wind", "water"], test_getchannel())
-#     test_wait_loop(["wind", "water"])
-#     helper.add_test_result("Add multiple roles", test_has_roles(["wind", "water"]), "Unable to add role: Wind, Water "
-#                                                                                     "to user")
-#     helper.counter = 2
-#
-# async def test_three():
-#     """Tests adding invalid roles """
-#     while(helper.counter != 2):
-#         await asyncio.sleep(0.1)
-#     await add_role(None, test_getuser(), ["admin"], test_getchannel())
-#     test_wait_loop(["admin"], False)
-#     helper.add_test_result("Add invalid roles", not test_has_roles(["admin"]), "Incorrectly added role: Admin")
-#     helper.counter = 3
-#
-#
-# async def test_four():
-#     """Tests removing one role """
-#     while(helper.counter != 3):
-#         await asyncio.sleep(0.1)
-#     await remove_role(None, test_getuser(), ["fire"], test_getchannel())
-#     test_wait_loop(["fire"], False)
-#     helper.add_test_result("Remove one role", test_has_roles(["fire"]), "Unable to remove role: Fire from user")
-#     helper.counter = 4
-#
-# async def test_five():
-#     """Tests removing many roles """
-#     while(helper.counter != 4):
-#         await asyncio.sleep(0.1)
-#     await remove_role(None, test_getuser(), ["water", "wind"], test_getchannel())
-#     test_wait_loop(["water", "wind"], False)
-#     helper.add_test_result("Remove multiple roles", test_has_roles(["water", "wind"]), "Unable to remove role: Water, "
-#                                                                                      "Wind from user")
-#     helper.counter = 5
-#
-# async def test_six():
-#     """Tests removing invalid roles """
-#     while(helper.counter != 5):
-#         await asyncio.sleep(0.1)
-#     await remove_role(None, test_getuser(), ["Rainbow"], test_getchannel())
-#     helper.add_test_result("Remove invalid roles", not test_has_roles(["Rainbow"]), "Incorrectly removed role: Rainbow")
-#     helper.counter = 6
-#
-# async def test_begin():
-#     """Initializes the testing grounds (makes sure the testing account doesn't have any extra commands"""
-#     helper.init()
-#     helper.orig_test_roles = list(map(lambda x: str(x).lower(), test_getuser().roles))
-#     await remove_role(None, test_getuser(), list(map(lambda x: str(x).lower(), helper.orig_test_roles)),
-#                       test_getchannel())
-#
-#
-# #
-# #
-# async def test_end(message):
-#     while(helper.counter != 6):
-#         await asyncio.sleep(0.1)
-#     await remove_role(None, test_getuser(),
-#                 list(map(lambda x: str(x).lower(), test_getserver().roles)), test_getchannel())
-#     await add_role(None, test_getuser(), helper.orig_test_roles, test_getchannel())
-#     await client.send_message(message.channel, helper.display_test_results())
-#
-#
-#
-# def test_getserver():
-#     """:rtype discord.Server"""
-#     return client.get_server(helper.SERVER_ID)
-#
-#
-# def test_getchannel():
-#     """:rtype discord.channel"""
-#     return test_getserver().get_channel(helper.CHANNEL_ID)
-#
-#
-# def test_getuser():
-#     """:rtype discord.member"""
-#     return test_getserver().get_member(helper.USER_ID)
-#
-#
-# def test_has_roles(list_of_roles):
-#     user_roles = list(map(lambda x: str(x).lower(), test_getuser().roles))
-#     for role in list(map(lambda x: str(x).lower(), list_of_roles)):
-#         if role not in user_roles:
-#             return False
-#     return True
-#
-#
-# def test_wait_loop(list_of_roles, behaviour=True):
-#     for role in list_of_roles:
-#         for x in [1,5]:
-#             if behaviour:
-#                 if role in list(map(lambda x: str(x).lower(), test_getuser().roles)): break
-#             else:
-#                 if role not in list(map(lambda x: str(x).lower(), test_getuser().roles)): break
-#             time.sleep(0.6)
 
 
 ########## INITIALIZER ##########
