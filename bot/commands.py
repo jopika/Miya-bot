@@ -21,7 +21,7 @@ async def help(message):
                 message_string += ", User"
             message_string += "}:        " + func_help[key] + "\n"
     message_string += "-----------------------------------------------------------\n"
-    await client.send_message(message.channel, message_string)
+    await client.send_message(message.author, message_string)
 
 
 async def unauthorized_command(message):
