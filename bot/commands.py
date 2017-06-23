@@ -1,3 +1,5 @@
+import asyncio
+
 import bot.handler as handler
 import bot.permissions as permissions
 
@@ -92,6 +94,11 @@ async def role_modify(message, action, user='', roles=[]):
         if DEBUG:
             print("User: ", user_obj, " has removed roles: ", role_string_list, " Current roles: ",
                   list(map(lambda x: str(x), user_obj.roles)))
+    if user == '' and roles == []:
+        if len(role_list) > 0:
+            await client.send_message(message.channel, "Finished modifying roles of user: " + user_obj.mention)
+        else:
+            await client.send_message(message.channel, "Unable to modify any roles of user: " + user_obj.mention)
 
 
 async def purge(message):
@@ -156,6 +163,10 @@ async def modify_command_permissions(message, allow=True):
         if command in func_dict.keys() and command in commandList:
             commandList.remove(command)
             handler.update_config()
+
+
+async def send_complete(message):
+    pass
 
 
 # Current Status: async calls are troublesome to test
