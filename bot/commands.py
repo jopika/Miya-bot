@@ -95,7 +95,10 @@ async def role_modify(message, action, user='', roles=[]):
             print("User: ", user_obj, " has removed roles: ", role_string_list, " Current roles: ",
                   list(map(lambda x: str(x), user_obj.roles)))
     if user == '' and roles == []:
-        await client.send_message(message.channel, "Finished modifying roles of user: " + user_obj.mention)
+        if len(role_list) > 0:
+            await client.send_message(message.channel, "Finished modifying roles of user: " + user_obj.mention)
+        else:
+            await client.send_message(message.channel, "Unable to modify any roles of user: " + user_obj.mention)
 
 
 async def purge(message):
