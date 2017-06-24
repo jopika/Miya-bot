@@ -165,6 +165,33 @@ async def modify_command_permissions(message, allow=True):
             handler.update_config()
 
 
+async def allow_role_modification(message):
+    if not authorized(message, 'allowrolemodification'):
+        await unauthorized_command(message)
+    else:
+        await modify_role_permissions(message, True)
+
+
+async def restrict_role_modification(message):
+    if not authorized(message, 'restrictrolemodification'):
+        await unauthorized_command(message)
+    else:
+        await modify_role_permissions(message, False)
+
+
+async def modify_role_permissions(message, allow=True):
+    role = str(message.content.split()[1]).lower()
+    if (whitelist_roles and allow) or not whitelist_roles:
+        if role not in roleList:
+            roleList.append(role)
+            handler.update_config()
+    else:
+        if role in roleList:
+            roleList.remove(role)
+            handler.update_config()
+    await client.send_message(message.channel, "Role List Modification complete. Current List: {}".format(roleList))
+
+
 async def send_complete(message):
     pass
 
@@ -202,6 +229,8 @@ func_dict = {
     'removerole': remove_role,
     'allowcommand': allow_command,
     'restrictcommand': restrict_command,
+    'allowrolemodification': allow_role_modification,
+    'restrictrolemodification': restrict_role_modification,
     'purge': purge,
     'nuke': nuke,
     # 'test': testing_bank,
@@ -215,6 +244,10 @@ func_help = {
     'removerole': "!removerole [roles] - Removes the roles from yourself, roles can be separated by spaces",
     'allowcommand': "!allowcommand [command] - Allows the command to be used",
     'restrictcommand': "!restrictcommand [command] - Restricts the command from being used",
+    'allowrolemodification': "!allowrolemodification [role] - Allows the role to be modified using "
+                             "addrole/removerole commands",
+    'restrictrolemodification': "!restrictrolemodification [role] - Restricts the role to be modified"
+                                "using the addrole/removerole commands",
     'purge': "!purge - Cleans the last few bot messages",
     'nuke': "!nuke [n=100] - Removes the last [n] messages from the channel"
     # 'quit': "!quit - Shutdown the bot gracefully"
