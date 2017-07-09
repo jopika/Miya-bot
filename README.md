@@ -1,4 +1,5 @@
 # Takane
+![Takane](https://raw.githubusercontent.com/jopika/Takane/master/Takane.png)
 
 Takane is a lightweight administrative bot that alleviates the strain on simple admin and officer tasks for a Discord Guild.  
 Currently Takane is in **alpha**, so she isn't out for public use just yet. This code is to provide transparency and collaboration.  
