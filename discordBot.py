@@ -46,8 +46,8 @@ def main():
     client = handler.client
     DEBUG = handler.DEBUG
 
-    client.run(token)
-
+    # client.run(token)
+    handler.run()
 
 if __name__ == '__main__':
     main()

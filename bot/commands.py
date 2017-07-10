@@ -1,8 +1,12 @@
 import asyncio
+import discord
+
+# from datetime import datetime
+# from pytz import timezone
 
 import bot.handler as handler
 import bot.permissions as permissions
-
+import res.StampMapping as stamp_map
 
 async def invalid_command(message):
     """Default function that runs if user attempts to run an invalid command"""
@@ -56,7 +60,7 @@ async def list_roles(message):
         await unauthorized_command(message)
 
 
-async def add_role(message, user='', roles=[], channel=''):
+async def add_role(message, user='', roles=None, channel=''):
     """Adds the role(s) to the given user"""
     if not has_permissions(message, permissions.MANAGE_ROLES, channel):
         await no_permissions_command(message, channel)
@@ -64,7 +68,7 @@ async def add_role(message, user='', roles=[], channel=''):
         await role_modify(message, 'add', user, roles)
 
 
-async def remove_role(message, user='', roles=[], channel=''):
+async def remove_role(message, user='', roles=None, channel=''):
     """Removes the role(s) from the given user"""
     if not has_permissions(message, permissions.MANAGE_ROLES, channel):
         await no_permissions_command(message, channel)
@@ -72,8 +76,8 @@ async def remove_role(message, user='', roles=[], channel=''):
         await role_modify(message, 'del', user, roles)
 
 
-async def role_modify(message, action, user='', roles=[]):
-    if user != '' and roles != []:
+async def role_modify(message, action, user='', roles=None):
+    if user != '' and roles is not None:
         user_obj = user
         role_string_list = filter_roles(roles)
     else:
@@ -165,34 +169,104 @@ async def modify_command_permissions(message, allow=True):
             handler.update_config()
 
 
-async def send_complete(message):
-    pass
+async def allow_role_modification(message):
+    if not authorized(message, 'allowrolemodification'):
+        await unauthorized_command(message)
+    else:
+        await modify_role_permissions(message, True)
 
 
-# Current Status: async calls are troublesome to test
-# async def testing_bank(message):
-#     if is_owner(message.author.id):
-#         await client.send_message(message.channel, "Running tests...   ")
-#         await test_begin()
-#         loop = asyncio.get_event_loop()
-#         loop.stop()
-#         future = asyncio.Future()
-#         asyncio.ensure_future(first_test(future))
-#         loop.run_until_complete(future)
-#         # await asyncio.sleep(1)
-#         # await test_one()
-#         # await asyncio.sleep(1)
-#         # await test_two()
-#         # await asyncio.sleep(1)
-#         # await test_three()
-#         # await asyncio.sleep(2)
-#         # await test_four()
-#         # await asyncio.sleep(1)
-#         # await test_five()
-#         # await asyncio.sleep(1)
-#         # await test_six()
-#         # await asyncio.sleep(1)
-#         await test_end(message)
+async def restrict_role_modification(message):
+    if not authorized(message, 'restrictrolemodification'):
+        await unauthorized_command(message)
+    else:
+        await modify_role_permissions(message, False)
+
+
+async def modify_role_permissions(message, allow=True):
+    role = str(message.content.split()[1]).lower()
+    if (whitelist_roles and allow) or not whitelist_roles:
+        if role not in roleList:
+            roleList.append(role)
+            handler.update_config()
+    else:
+        if role in roleList:
+            roleList.remove(role)
+            handler.update_config()
+    await client.send_message(message.channel, "Role List Modification complete. Current List: {}".format(roleList))
+
+
+async def stamp(message):
+    if not authorized(message, 'stamp'):
+        await unauthorized_command(message)
+    else:
+        keyword = message.content[7:].strip()
+        if keyword in handler.alias.keys():
+            stamp_num = int(handler.alias[keyword])
+        else:
+            try:
+                stamp_num = int(keyword.split()[0])
+            except ValueError:
+                stamp_num = -1
+        if stamp_num in stamp_map.map:
+            image = discord.Embed().set_image(url=stamp_map.map[stamp_num])
+            await client.send_message(message.channel, content="{}: Stamp {}".format(message.author.name,
+                                                                                     stamp_num), embed=image)
+            msg_id = message
+        else:
+            msg_id = await client.send_message(message.channel, "Invalid stamp!")
+            await asyncio.sleep(1.5)
+        await client.delete_message(msg_id)
+
+
+async def add_alias(message):
+    """!addalias [alias-value pairs] - Adds the alias mapping, where mappings are separated by commas
+    ex. alias1 = 14, alias2=3"""
+    if not authorized(message, "addalias"):
+        await unauthorized_command(message)
+    else:
+        list_of_alias = message.content[10:].split(",")
+        await modify_alias(message, "add", list_of_alias)
+
+
+async def remove_alias(message):
+    """!removealias [alias] - Removes the alias, separated by commas"""
+    if not authorized(message, "remmovealias"):
+        await unauthorized_command(message)
+    else:
+        list_of_alias = message.content[13:].split(",")
+        await modify_alias(message, "del", list_of_alias)
+
+
+async def modify_alias(message, action, list_of_alias):
+    for alias in list_of_alias:
+        if action.lower() == 'add':
+            key = alias.split("=")[0].strip()
+            value = alias.split("=")[1].strip()
+            if key != handler.alias:
+                handler.alias[key] = value
+            else:
+                await client.send_message(message.channel, "Unable to add the alias: {} to the value {}, "
+                                                     "check if it is already mapped to a "
+                                                     "different value.".format(key, value))
+        else:
+            if alias in handler.alias:
+                del handler.alias[alias]
+            else:
+                await client.send_message(message.channel, "Unable to remove alias: {},"
+                                                     "check if a mapping exists.".format(alias))
+    handler.update_config()
+    await list_alias(message)
+
+
+async def list_alias(message):
+    if not authorized(message, "listalias"):
+        await unauthorized_command(message)
+    else:
+        msg_str = "List of alias mappings: "
+        for key, value in handler.alias.items():
+            msg_str += "\n {}: {}".format(key, value)
+        await client.send_message(message.channel, msg_str)
 
 
 func_dict = {
@@ -202,9 +276,14 @@ func_dict = {
     'removerole': remove_role,
     'allowcommand': allow_command,
     'restrictcommand': restrict_command,
+    'allowrolemodification': allow_role_modification,
+    'restrictrolemodification': restrict_role_modification,
     'purge': purge,
     'nuke': nuke,
-    # 'test': testing_bank,
+    'stamp': stamp,
+    'addalias': add_alias,
+    'removealias': remove_alias,
+    'listalias': list_alias,
     'quit': quit
 }
 
@@ -215,8 +294,17 @@ func_help = {
     'removerole': "!removerole [roles] - Removes the roles from yourself, roles can be separated by spaces",
     'allowcommand': "!allowcommand [command] - Allows the command to be used",
     'restrictcommand': "!restrictcommand [command] - Restricts the command from being used",
-    'purge': "!purge - Cleans the last few bot messages",
-    'nuke': "!nuke [n=100] - Removes the last [n] messages from the channel"
+    'allowrolemodification': "!allowrolemodification [role] - Allows the role to be modified using "
+                             "addrole/removerole commands",
+    'restrictrolemodification': "!restrictrolemodification [role] - Restricts the role to be modified"
+                                "using the addrole/removerole commands",
+    'purge': "!purge [n=100] - Cleans the last [n] bot messages",
+    'stamp': "!stamp [number] - Inserts the corresponding stamp, can be chained with aliases",
+    'addalias': "!addalias [alias-value pairs] - Adds the alias mapping, where mappings are separated by commas "
+                "ex. alias1 = 14, alias2=3",
+    'removealias': "!removealias [alias] - Removes the alias, separated by commas",
+    'listalias': "!listalias - Lists all aliases that can be used",
+    'nuke': "!nuke [n=50] - Removes the last [n] messages from the channel"
     # 'quit': "!quit - Shutdown the bot gracefully"
 }
 

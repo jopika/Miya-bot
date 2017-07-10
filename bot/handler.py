@@ -1,3 +1,4 @@
+import asyncio
 import discord
 import yaml
 from pathlib import Path
@@ -26,6 +27,10 @@ whitelist_commands = False
 commandList = []
 # Configuration File
 config_file = Path()
+# Event Loop
+loop = asyncio.get_event_loop()
+# Alias
+alias = {}
 
 
 def update_config():
@@ -33,6 +38,7 @@ def update_config():
         config = yaml.load(read_stream)
         config['roleList'] = roleList
         config['commandList'] = commandList
+        config['alias'] = alias
     with config_file.open('w') as write_stream:
         yaml.dump(config, write_stream)
 
@@ -46,6 +52,7 @@ def prompt():
     global roleList
     global whitelist_commands
     global commandList
+    global alias
     token = input("What is the bot's Token ID?: ")
     print("What is the owner's id?")
     owner_id = input("You can retrieve the ID by using '\@<username>': ")
@@ -67,6 +74,7 @@ def prompt():
         whitelist_commands = False
     print("You are able to change the list of commands later")
     commandList = input("Please separate commands by spaces").lower().split()
+    alias = {}
 
     data = dict(
         token=token,
@@ -75,7 +83,9 @@ def prompt():
         whitelist_roles=whitelist_roles,
         whitelist_commands=whitelist_commands,
         roleList=roleList,
-        commandList=commandList)
+        commandList=commandList,
+        alias=alias
+        )
 
     with config_file.open('w') as stream:
         yaml.dump(data, stream, default_flow_style=False)
@@ -94,6 +104,7 @@ def init(config_file_path, debug_toggle='', testing_toggle=False):
     global whitelist_commands
     global commandList
     global config_file
+    global alias
     if debug_toggle != '':
         DEBUG = debug_toggle
     TESTING = testing_toggle
@@ -110,9 +121,24 @@ def init(config_file_path, debug_toggle='', testing_toggle=False):
                 roleList = config["roleList"]
                 whitelist_commands = bool(config["whitelist_commands"])
                 commandList = config["commandList"]
+                alias = config["alias"]
             except yaml.YAMLError as exc:
                 print(exc)
                 prompt()
     else:
         # prompt user if file is not found
         prompt()
+
+
+def run():
+    try:
+        loop.run_until_complete(main_task())
+    except:
+        loop.run_until_complete(client.logout)
+    finally:
+        loop.close()
+
+
+async def main_task():
+    await client.login(token)
+    await client.connect()
