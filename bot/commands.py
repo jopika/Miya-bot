@@ -269,32 +269,6 @@ async def list_alias(message):
         await client.send_message(message.channel, msg_str)
 
 
-# Current Status: async calls are troublesome to test
-# async def testing_bank(message):
-#     if is_owner(message.author.id):
-#         await client.send_message(message.channel, "Running tests...   ")
-#         await test_begin()
-#         loop = asyncio.get_event_loop()
-#         loop.stop()
-#         future = asyncio.Future()
-#         asyncio.ensure_future(first_test(future))
-#         loop.run_until_complete(future)
-#         # await asyncio.sleep(1)
-#         # await test_one()
-#         # await asyncio.sleep(1)
-#         # await test_two()
-#         # await asyncio.sleep(1)
-#         # await test_three()
-#         # await asyncio.sleep(2)
-#         # await test_four()
-#         # await asyncio.sleep(1)
-#         # await test_five()
-#         # await asyncio.sleep(1)
-#         # await test_six()
-#         # await asyncio.sleep(1)
-#         await test_end(message)
-
-
 func_dict = {
     'help': help,
     'listroles': list_roles,
@@ -306,12 +280,10 @@ func_dict = {
     'restrictrolemodification': restrict_role_modification,
     'purge': purge,
     'nuke': nuke,
-    # 'test': testing_bank,
     'stamp': stamp,
     'addalias': add_alias,
     'removealias': remove_alias,
     'listalias': list_alias,
-    'test': test,
     'quit': quit
 }
 
@@ -327,7 +299,11 @@ func_help = {
     'restrictrolemodification': "!restrictrolemodification [role] - Restricts the role to be modified"
                                 "using the addrole/removerole commands",
     'purge': "!purge [n=100] - Cleans the last [n] bot messages",
-    'stamp': "!stamp [number] - Inserts the corresponding stamp",
+    'stamp': "!stamp [number] - Inserts the corresponding stamp, can be chained with aliases",
+    'addalias': "!addalias [alias-value pairs] - Adds the alias mapping, where mappings are separated by commas "
+                "ex. alias1 = 14, alias2=3",
+    'removealias': "!removealias [alias] - Removes the alias, separated by commas",
+    'listalias': "!listalias - Lists all aliases that can be used",
     'nuke': "!nuke [n=50] - Removes the last [n] messages from the channel"
     # 'quit': "!quit - Shutdown the bot gracefully"
 }
