@@ -256,17 +256,20 @@ async def modify_alias(message, action, list_of_alias):
                 await client.send_message(message.channel, "Unable to remove alias: {},"
                                                      "check if a mapping exists.".format(alias))
     handler.update_config()
-    await list_alias(message)
+    await list_alias(message, 'channel')
 
 
-async def list_alias(message):
+async def list_alias(message, target='author'):
     if not authorized(message, "listalias"):
         await unauthorized_command(message)
     else:
         msg_str = "List of alias mappings: "
         for key, value in handler.alias.items():
             msg_str += "\n {}: {}".format(key, value)
-        await client.send_message(message.channel, msg_str)
+        if target == "author":
+            await client.send_message(message.author, msg_str)
+        else:
+            await client.send_message(message.channel, msg_str)
 
 
 func_dict = {
