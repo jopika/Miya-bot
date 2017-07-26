@@ -98,7 +98,7 @@ async def role_modify(message, action, user='', roles=None):
         if DEBUG:
             print("User: ", user_obj, " has removed roles: ", role_string_list, " Current roles: ",
                   list(map(lambda x: str(x), user_obj.roles)))
-    if user == '' and roles == []:
+    if user == '' and roles is None:
         if len(role_list) > 0:
             await client.send_message(message.channel, "Finished modifying roles of user: " + user_obj.mention)
         else:
@@ -210,7 +210,7 @@ async def stamp(message):
                 stamp_num = -1
         if stamp_num in stamp_map.map:
             image = discord.Embed().set_image(url=stamp_map.map[stamp_num])
-            await client.send_message(message.channel, content="{}: Stamp {}".format(message.author.name,
+            await client.send_message(message.channel, content="{}: Stamp {}".format(message.author.display_name,
                                                                                      stamp_num), embed=image)
             msg_id = message
         else:
