@@ -1,12 +1,13 @@
 import asyncio
 import discord
 
-# from datetime import datetime
-# from pytz import timezone
+import datetime
+import pytz
 
 import bot.handler as handler
 import bot.permissions as permissions
 import res.StampMapping as stamp_map
+
 
 async def invalid_command(message):
     """Default function that runs if user attempts to run an invalid command"""
@@ -30,8 +31,11 @@ async def help(message):
     await client.send_message(message.author, message_string)
 
 
-async def unauthorized_command(message):
-    await client.send_message(message.channel, "You are not authorized to use this command!")
+async def unauthorized_command(message, custom_message=""):
+    if custom_message is "":
+        await client.send_message(message.channel, "You are not authorized to use this command!")
+    else:
+        await client.send_message(message.channel, custom_message)
 
 
 async def no_permissions_command(message, channel=''):
@@ -46,16 +50,16 @@ async def list_roles(message):
     """Lists the roles the user is allowed to add or remove from self"""
     if authorized(message, 'listroles'):
         server = message.server
-        serverRoles = server.roles
-        listOfRoles = []
-        for role in serverRoles:
-            listOfRoles.append(str(role))
-        listOfRoles = filter_roles(listOfRoles)
-        messageString = ""
-        for role in filter_roles(listOfRoles):
-            messageString += str(role)
-            messageString += " "
-        await client.send_message(message.channel, messageString)
+        server_roles = server.roles
+        list_of_roles = []
+        for role in server_roles:
+            list_of_roles.append(str(role))
+        list_of_roles = filter_roles(list_of_roles)
+        message_string = ""
+        for role in filter_roles(list_of_roles):
+            message_string += str(role)
+            message_string += " "
+        await client.send_message(message.channel, message_string)
     else:
         await unauthorized_command(message)
 
@@ -247,14 +251,14 @@ async def modify_alias(message, action, list_of_alias):
                 handler.alias[key] = value
             else:
                 await client.send_message(message.channel, "Unable to add the alias: {} to the value {}, "
-                                                     "check if it is already mapped to a "
-                                                     "different value.".format(key, value))
+                                                           "check if it is already mapped to a "
+                                                           "different value.".format(key, value))
         else:
             if alias in handler.alias:
                 del handler.alias[alias]
             else:
                 await client.send_message(message.channel, "Unable to remove alias: {},"
-                                                     "check if a mapping exists.".format(alias))
+                                                           "check if a mapping exists.".format(alias))
     handler.update_config()
     await list_alias(message, 'channel')
 
@@ -272,6 +276,17 @@ async def list_alias(message, target='author'):
             await client.send_message(message.channel, msg_str)
 
 
+async def time(message):
+    if not authorized(message, "time"):
+        await unauthorized_command(message)
+    else:
+        utc_dt = pytz.utc.localize(datetime.datetime.utcnow())
+        japan_tz = pytz.timezone("Asia/Tokyo")
+        japan_dt = utc_dt.astimezone(japan_tz) + datetime.timedelta(hours=5)
+        fmt = "%B-%d %H:%M:%S"
+        await client.send_message(message.channel, "Japan: {}".format(japan_dt.strftime(fmt)))
+
+
 func_dict = {
     'help': help,
     'listroles': list_roles,
@@ -287,6 +302,7 @@ func_dict = {
     'addalias': add_alias,
     'removealias': remove_alias,
     'listalias': list_alias,
+    'time': time,
     'quit': quit
 }
 
@@ -307,7 +323,8 @@ func_help = {
                 "ex. alias1 = 14, alias2=3",
     'removealias': "!removealias [alias] - Removes the alias, separated by commas",
     'listalias': "!listalias - Lists all aliases that can be used",
-    'nuke': "!nuke [n=50] - Removes the last [n] messages from the channel"
+    'nuke': "!nuke [n=50] - Removes the last [n] messages from the channel",
+    'time': "!time - Prints the current JST"
     # 'quit': "!quit - Shutdown the bot gracefully"
 }
 
