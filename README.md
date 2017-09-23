@@ -6,6 +6,10 @@ Currently Takane is in **alpha**, so she isn't out for public use just yet. This
 
 Takane was originally a small side project, started from the burden of managing a Guild on discord along with special role-specific mentions.
 
+Currently, Takane has a few extra features that are implemented, along with some in the works.
+* Granblue Fantasy Stickers - use !stamp [id] and insert the stickers into your conversations!  
+* Admin-level management - Allow certain selected users to add/restrict commands and roles, without editing any configs.
+
 ## Installation
 As Takane is not currently open to the public, there is no installation guide just yet.
 
