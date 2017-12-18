@@ -414,6 +414,10 @@ def retrieve_roles(server, list_of_roles):
     return [role for role in server_roles if str(role).lower() in list_of_roles]
 
 
+def is_message_pinned(message):
+    return message.pinned
+
+
 ########## INITIALIZER ##########
 def init():
     global client
