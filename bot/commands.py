@@ -282,7 +282,7 @@ async def time(message):
     else:
         utc_dt = pytz.utc.localize(datetime.datetime.utcnow())
         japan_tz = pytz.timezone("Asia/Tokyo")
-        japan_dt = utc_dt.astimezone(japan_tz) + datetime.timedelta(hours=5)
+        japan_dt = utc_dt.astimezone(japan_tz) 
         fmt = "%B-%d %H:%M:%S"
         await client.send_message(message.channel, "Japan: {}".format(japan_dt.strftime(fmt)))
 
