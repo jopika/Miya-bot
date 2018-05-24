@@ -125,10 +125,24 @@ async def nuke(message):
         await no_permissions_command(message)
     if authorized(message, 'nuke'):
         command_params = message.content.split()[1:]
+        flags = list()
         count = 50
-        if len(command_params) == 1:
-            count = int(command_params[0])
-        await client.purge_from(message.channel, limit=count)
+        for input in command_params:
+            if input.startswith("-"):
+                flags.append(input)
+            elif input[0].isdigit():
+                try:
+                    count = int(input)
+                except:
+                    await client.send_message(message.channel, "Nuke -- Unknown option: " + input)
+                    return
+            else:
+                await client.send_message(message.channel, "Nuke -- Unknown option: " + input)
+                return
+        if "-f" in flags:
+            await client.purge_from(message.channel, limit=count)
+        else:
+            await client.purge_from(message.channel, limit=count, check=is_message_not_pinned)
     else:
         await unauthorized_command(message)
 
@@ -323,7 +337,8 @@ func_help = {
                 "ex. alias1 = 14, alias2=3",
     'removealias': "!removealias [alias] - Removes the alias, separated by commas",
     'listalias': "!listalias - Lists all aliases that can be used",
-    'nuke': "!nuke [n=50] - Removes the last [n] messages from the channel",
+    'nuke': "!nuke [n=50] [-f]- Removes the last [n] unpinned messages from the channel, "
+            "-f deletes pinned messages as well",
     'time': "!time - Prints the current JST"
     # 'quit': "!quit - Shutdown the bot gracefully"
 }
@@ -412,6 +427,10 @@ def retrieve_roles(server, list_of_roles):
     """
     server_roles = server.roles
     return [role for role in server_roles if str(role).lower() in list_of_roles]
+
+
+def is_message_not_pinned(message):
+    return not message.pinned
 
 
 ########## INITIALIZER ##########

@@ -58,7 +58,7 @@ docs/_build/
 target/
 
 
-# Custome files
+# Custom files
 config.yaml
 config*
 
